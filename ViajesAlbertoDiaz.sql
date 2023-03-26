@@ -8,17 +8,6 @@ CREATE OR REPLACE PROCEDURE crearViaje (
     v_modelo INTEGER;
     v_ocupadas INTEGER;
 BEGIN
-    -- Obtener el número de plazas del modelo del autocar
-    SELECT modelos.nplazas
-    INTO v_plazas
-    FROM autocares
-    JOIN modelos ON autocares.modelo = modelos.idModelo
-    WHERE autocares.idAutocar = m_idAutocar;
-
-    -- Si el autocar no tiene modelo asociado, se toman 25 plazas libres por defecto
-    IF v_plazas IS NULL THEN
-        v_plazas := 25;
-    END IF;
 
     -- Validar la existencia del recorrido
     SELECT COUNT(*) INTO v_modelo FROM recorridos WHERE idRecorrido = m_idRecorrido;
@@ -44,6 +33,18 @@ BEGIN
     WHERE idRecorrido = m_idRecorrido AND fecha = m_fecha;
     IF v_modelo > 0 THEN
         RAISE_APPLICATION_ERROR(-20004, 'VIAJE_DUPLICADO');
+    END IF;
+    
+    -- Obtener el número de plazas del modelo del autocar
+    SELECT modelos.nplazas
+    INTO v_plazas
+    FROM autocares
+    JOIN modelos ON autocares.modelo = modelos.idModelo
+    WHERE autocares.idAutocar = m_idAutocar;
+
+    -- Si el autocar no tiene modelo asociado, se toman 25 plazas libres por defecto
+    IF v_plazas IS NULL THEN
+        v_plazas := 25;
     END IF;
 
     -- Insertar el nuevo viaje
