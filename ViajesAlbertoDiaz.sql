@@ -36,21 +36,26 @@ BEGIN
     END IF;
     
     -- Obtener el número de plazas del modelo del autocar
-    SELECT modelos.nplazas
-    INTO v_plazas
-    FROM autocares
+    SELECT COUNT(*) INTO v_modelo FROM autocares
     JOIN modelos ON autocares.modelo = modelos.idModelo
     WHERE autocares.idAutocar = m_idAutocar;
-
+    
     -- Si el autocar no tiene modelo asociado, se toman 25 plazas libres por defecto
-    IF v_plazas IS NULL THEN
+    IF v_modelo = 0 THEN
         v_plazas := 25;
+    ELSE
+        SELECT modelos.nplazas
+        INTO v_plazas
+        FROM autocares
+        JOIN modelos ON autocares.modelo = modelos.idModelo
+        WHERE autocares.idAutocar = m_idAutocar;
     END IF;
 
     -- Insertar el nuevo viaje
     INSERT INTO viajes (idViaje, idAutocar, idRecorrido, fecha, nPlazasLibres, conductor)
     VALUES (seq_viajes.NEXTVAL, m_idAutocar, m_idRecorrido, m_fecha, v_plazas, m_conductor);
 
+    COMMIT;
 END;
 
 /
@@ -58,3 +63,4 @@ END;
 begin
   test_crearViaje;
 end;
+
